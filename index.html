@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack-Pro</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50">
+<div class="bg-white p-4 shadow flex justify-between items-center">
+<div class="flex gap-3 items-center">
+<div class="w-10 h-10 bg-teal-600 rounded-xl flex items-center justify-center text-white"><i class="fas fa-capsules"></i></div>
+<div><h1 class="font-bold">MedTrack-Pro</h1><p class="text-xs text-slate-500">Pharmacy Inventory</p></div>
+</div>
+<div class="w-8 h-8 bg-teal-600 rounded-full flex items-center justify-center text-white font-bold text-sm">JD</div>
+</div>
+<div class="p-4 max-w-6xl mx-auto">
+<h2 class="text-2xl font-bold">Good morning, Dr. Johnson</h2>
+<p class="text-slate-500 mb-4">Inventory overview</p>
+<div class="grid grid-cols-2 gap-4 mb-6">
+<div class="bg-cyan-100 rounded-2xl p-4"><p>Total Items</p><p class="text-3xl font-bold">1,284</p></div>
+<div class="bg-white rounded-2xl p-4 border"><p>Low Stock</p><p class="text-3xl font-bold">12</p></div>
+<div class="bg-white rounded-2xl p-4 border"><p>Expiring Soon</p><p class="text-3xl font-bold">6</p></div>
+<div class="bg-white rounded-2xl p-4 border"><p>On Order</p><p class="text-3xl font-bold">34</p></div>
+</div>
+<div class="bg-white rounded-2xl p-4 shadow">
+<input id="search" placeholder="Search medications..." class="w-full bg-slate-100 rounded-xl p-3 mb-4 text-sm outline-none">
+<div id="list"></div>
+</div>
+<div class="bg-white rounded-2xl p-4 mt-6">
+<input id="mName" placeholder="Medicine Name" class="w-full border rounded-xl p-3 mb-2 text-sm">
+<input id="mQty" type="number" placeholder="Qty" class="w-full border rounded-xl p-3 mb-2 text-sm">
+<button onclick="addMed()" class="w-full bg-teal-600 text-white rounded-xl p-3 font-bold">Add Medicine</button>
+</div>
+</div>
+<script>
+let meds=[
+{name:'Paracetamol 500mg',sku:'MED-PARA500',qty:240,status:'In Stock',color:'bg-blue-500'},
+{name:'Amoxicillin 250mg',sku:'MED-AMOX250',qty:15,status:'Low Stock',color:'bg-orange-400'},
+{name:'Ibuprofen 200mg',sku:'MED-IBU200',qty:8,status:'Expiring Soon',color:'bg-red-400'},
+{name:'Vitamin D3 1000IU',sku:'MED-VITD1000',qty:102,status:'In Stock',color:'bg-green-500'}
+];
+function render(f=''){
+const list=document.getElementById('list');list.innerHTML='';
+meds.filter(m=>m.name.toLowerCase().includes(f.toLowerCase())).forEach(m=>{
+let c=m.status=='In Stock'?'bg-green-100 text-green-700':m.status=='Low Stock'?'bg-orange-100 text-orange-700':'bg-red-100 text-red-700';
+list.innerHTML+=`<div class="flex justify-between items-center border-b pb-3 mb-2"><div class="flex gap-3 items-center"><div class="w-10 h-10 ${m.color} rounded-xl flex items-center justify-center text-white"><i class="fas fa-capsules"></i></div><div><div class="font-bold text-sm">${m.name}</div><div class="text-xs text-slate-500">${m.sku} - ${m.qty} units</div></div></div><span class="text-xs px-3 py-1 rounded-full ${c}">${m.status}</span></div>`;
+});
+}
+function addMed(){
+let n=document.getElementById('mName').value;
+let q=document.getElementById('mQty').value;
+if(!n)return alert('Enter name');
+meds.unshift({name:n,sku:'MED-'+Date.now(),qty:q,status:q<20?'Low Stock':'In Stock',color:'bg-teal-500'});
+render();
+}
+document.getElementById('search').addEventListener('input',e=>render(e.target.value));
+render();
+</script>
+</body>
+</html>
