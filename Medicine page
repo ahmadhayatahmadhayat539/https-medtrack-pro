@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ur">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedTrack Pro</title>
+<style>
+*{box-sizing:border-box;font-family:system-ui}body{margin:0;background:#f5f7fb}
+header{background:#0d6efd;color:#fff;padding:16px;text-align:center}
+.card{background:#fff;margin:12px;padding:14px;border-radius:12px;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+input,button{width:100%;padding:12px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:15px}
+button{background:#0d6efd;color:#fff;border:none;font-weight:700}
+table{width:100%;border-collapse:collapse;margin-top:10px}th,td{border:1px solid #ddd;padding:8px;text-align:center}th{background:#eee}
+</style>
+</head>
+<body>
+<header><h2>💊 MedTrack Pro - سادہ ورژن</h2></header>
+<div class="card">
+<input id="name" placeholder="دوا کا نام">
+<input id="company" placeholder="کمپنی">
+<input id="cost" type="number" placeholder="خرید قیمت Rs">
+<input id="qty" type="number" placeholder="تعداد">
+<input id="expiry" type="date">
+<button onclick="add()">محفوظ کریں</button>
+</div>
+<div class="card">
+<table><thead><tr><th>نام</th><th>کمپنی</th><th>قیمت</th><th>تعداد</th><th>ایکسپائری</th><th>X</th></tr></thead><tbody id="list"></tbody></table>
+</div>
+<script>
+let data=JSON.parse(localStorage.getItem('medtrack_final')||'[]');
+function save(){localStorage.setItem('medtrack_final',JSON.stringify(data));render()}
+function add(){
+let n=name.value, c=company.value, co=cost.value, q=qty.value, e=expiry.value;
+if(!n)return alert('دوا کا نام لکھیں');
+data.push({id:Date.now(),n,c,co,q,e});save();name.value=company.value=cost.value=qty.value='';
+}
+function render(){list.innerHTML='';data.forEach(m=>{list.innerHTML+=`<tr><td>${m.n}</td><td>${m.c}</td><td>${m.co}</td><td>${m.q}</td><td>${m.e}</td><td><button onclick="del(${m.id})" style="background:red">X</button></td></tr>`})}
+function del(id){data=data.filter(x=>x.id!=id);save()}
+render();
+</script>
+</body>
+</html>
