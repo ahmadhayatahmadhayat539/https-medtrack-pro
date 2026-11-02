@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Medicine Stock - Pro with PDF</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  *{box-sizing:border-box;font-family:system-ui,Arial}
+  body{margin:0;background:#f1f5f9}
+  header{background:#0f766e;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .wrap{max-width:1200px;margin:auto;padding:12px}
+  .dash{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:12px}
+  .card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:10px;text-align:center}
+  .card b{font-size:20px;display:block}
+  .card span{font-size:10px;color:#64748b;font-weight:700;text-transform:uppercase}
+  .profitBox{background:#fff;border:2px solid #0d9488;border-radius:12px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;align-items:center}
+  .form{background:#fff;padding:12px;border-radius:12px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;border:1px solid #e2e8f0}
+  label{font-size:11px;font-weight:700;color:#64748b;display:block;margin-bottom:3px}
+  input{width:100%;padding:9px;border:1px solid #e2e8f0;border-radius:8px}
+  button{padding:8px 12px;border:0;border-radius:8px;font-weight:700;cursor:pointer;font-size:12px}
+  .primary{background:#0d9488;color:#fff} .ghost{background:#e2e8f0} .red{background:#fee2e2;color:#991b1b} .blue{background:#dbeafe;color:#1e40af} .orange{background:#fef3c7;color:#92400e}
+  table{width:100%;background:#fff;border-radius:12px;overflow:hidden;border-collapse:collapse;font-size:12px}
+  th,td{padding:9px;border-bottom:1px solid #f1f5f9;text-align:left}
+  th{background:#0f766e;color:#fff;font-size:10px}
+  .pill{padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;display:inline-block}
+  .p-red{background:#fee2e2;color:#991b1b} .p-orange{background:#fef3c7;color:#92400e} .p-green{background:#dcfce7;color:#065f46} .p-blue{background:#dbeafe;color:#1e40af}
+</style>
+</head>
+<body>
+<header>
+  <h1 style="margin:0;font-size:16px">💊 Medicine Stock PRO — Edit + Low/High + PDF</h1>
+  <div style="display:flex;gap:6px">
+    <button class="blue" onclick="downloadLowStockPDF()">📄 Low Stock PDF</button>
+    <button class="orange" onclick="showHistory()">📊 Profit History</button>
+    <button class="red" onclick="eraseTodayProfit()">🗑 New Day</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+<div class="profitBox">
+  <div><small style="color:#64748b;font-weight:700">AAJ KA PROFIT</small><br><b id="todayProfit" style="font-size:24px;color:#059669">Rs 0.00</b><div id="profitInfo" style="font-size:11px;color:#64748b">0 sold</div></div>
+  <div style="font-size:11px;color:#64748b">Low Stock = Qty ≤ Aapka Set Kiya Hua Number<br>High Stock = Qty ≥ Aapka Set Kiya Hua Number</div>
+</div>
+
+<div class="dash">
+  <div class="card"><b id="d-total">0</b><span>Total</span></div>
+  <div class="card"><b id="d-low" style="color:#dc2626">0</b><span>Low Stock</span></div>
+  <div class="card"><b id="d-high" style="color:#2563eb">0</b><span>High Stock</span></div>
+  <div class="card"><b id="d-exp" style="color:#dc2626">0</b><span>Expired</span></div>
+  <div class="card"><b id="d-alert" style="color:#d97706">0</b><span>Exp ≤6 Mo</span></div>
+</div>
+
+<div class="form">
+  <div><label>Medicine Name *</label><input id="name" placeholder="Panadol 500mg"></div>
+  <div><label>Quantity *</label><input id="qty" type="number" min="0" placeholder="e.g. 50"></div>
+  <div><label>Expiry Date *</label><input id="exp" type="date"></div>
+  <div><label>Cost Price</label><input id="cost" type="number" step="0.01" placeholder="Cost"></div>
+  <div><label>Sale Price</label><input id="sell" type="number" step="0.01" placeholder="Sale"></div>
+  <div><label>Low Stock Limit * (aap set karo)</label><input id="low" type="number" min="1" value="10" placeholder="e.g. 10 = 10 se kam ho to Low"></div>
+  <div><label>High Stock Limit (aap set karo)</label><input id="high" type="number" min="1" value="100" placeholder="e.g. 100 = 100 se zyada to High"></div>
+  <div style="grid-column:1/-1;display:flex;gap:8px;flex-wrap:wrap">
+    <button class="primary" id="btnSave" onclick="saveMed()">➕ Add Medicine</button>
+    <button class="ghost" id="btnCancel" onclick="cancelEdit()" style="display:none">Cancel Edit</button>
+  </div>
+</div>
+
+<input id="search" placeholder="🔍 Search medicine..." style="width:100%;max-width:300px;padding:10px;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:10px" oninput="render()">
+
+<table>
+<thead><tr><th>#</th><th>Medicine</th><th>Qty</th><th>Low ≤</th><th>High ≥</th><th>Stock Alert</th><th>Expiry Alert</th><th>Cost</th><th>Sale</th><th>Actions</th></tr></thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+
+<script>
+const KEY='med_pro_edit_lowhigh_pdf';
+let store=JSON.parse(localStorage.getItem(KEY)||'{"stock":[],"daily":{}}');
+let stock=store.stock||[]; let daily=store.daily||{};
+let editId=null;
+const saveStore=()=>localStorage.setItem(KEY, JSON.stringify({stock,daily}));
+function todayStr(){ return new Date().toISOString().slice(0,10); }
+
+function getExpStatus(expStr){
+  const exp=new Date(expStr); const today=new Date(); today.setHours(0,0,0,0);
+  const limit=new Date(today); limit.setMonth(limit.getMonth()+6);
+  if(exp < today) return {t:'EXPIRED',c:'p-red'};
+  if(exp <= limit) return {t:'≤6 Mo',c:'p-orange'};
+  return {t:'OK',c:'p-green'};
+}
+function getStockStatus(qty, low, high){
+  if(qty <= low) return {t:'LOW STOCK',c:'p-red'};
+  if(qty >= high) return {t:'HIGH STOCK',c:'p-blue'};
+  return {t:'Normal',c:'p-green'};
+}
+
+function saveMed(){
+  const name=document.getElementById('name').value.trim();
+  const qty=parseInt(document.getElementById('qty').value)||0;
+  const exp=document.getElementById('exp').value;
+  const cost=parseFloat(document.getElementById('cost').value)||0;
+  const sell=parseFloat(document.getElementById('sell').value)||0;
+  const low=parseInt(document.getElementById('low').value)||10;
+  const high=parseInt(document.getElementById('high').value)||100;
+  if(!name||!exp){ alert('Name & Expiry zaroori'); return; }
+
+  if(editId){
+    const i=stock.findIndex(x=>x.id===editId);
+    if(i>-1) stock[i]={...stock[i], name, qty, exp, cost, sell, low, high};
+    editId=null;
+    document.getElementById('btnSave').textContent='➕ Add Medicine';
+    document.getElementById('btnCancel').style.display='none';
+  } else {
+    stock.push({id:Date.now()+Math.random(), name, qty, exp, cost, sell, low, high});
+  }
+  saveStore(); render();
+  ['name','qty','exp','cost','sell'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('low').value=10; document.getElementById('high').value=100;
+}
+
+function cancelEdit(){
+  editId=null;
+  document.getElementById('btnSave').textContent='➕ Add Medicine';
+  document.getElementById('btnCancel').style.display='none';
+  ['name','qty','exp','cost','sell'].forEach(id=>document.getElementById(id).value='');
+}
+
+function render(){
+  const q=document.getElementById('search').value.toLowerCase();
+  const tb=document.getElementById('tbody'); tb.innerHTML='';
+  let lowC=0, highC=0, expC=0, alertC=0;
+  stock.filter(r=>r.name.toLowerCase().includes(q))
+       .sort((a,b)=> new Date(a.exp)-new Date(b.exp))
+       .forEach((r,i)=>{
+    const es=getExpStatus(r.exp);
+    const ss=getStockStatus(r.qty, r.low, r.high);
+    if(ss.t==='LOW STOCK') lowC++; if(ss.t==='HIGH STOCK') highC++;
+    if(es.t==='EXPIRED') expC++; if(es.t==='≤6 Mo') alertC++;
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${i+1}</td>
+      <td><b>${r.name}</b></td>
+      <td><b style="background:#f1f5f9;padding:3px 7px;border-radius:6px">${r.qty}</b></td>
+      <td>${r.low}</td>
+      <td>${r.high}</td>
+      <td><span class="pill ${ss.c}">${ss.t}</span></td>
+      <td><span class="pill ${es.c}">${es.t}</span></td>
+      <td>${r.cost.toFixed(2)}</td>
+      <td>${r.sell.toFixed(2)}</td>
+      <td style="display:flex;gap:4px;flex-wrap:wrap">
+        <button class="primary" onclick="editMed('${r.id}')">Edit</button>
+        <button class="ghost" onclick="sellMed('${r.id}',1)">Sell 1</button>
+        <button class="red" onclick="delMed('${r.id}')">✕</button>
+      </td>`;
+    tb.appendChild(tr);
+  });
+  document.getElementById('d-total').textContent=stock.length;
+  document.getElementById('d-low').textContent=lowC;
+  document.getElementById('d-high').textContent=highC;
+  document.getElementById('d-exp').textContent=expC;
+  document.getElementById('d-alert').textContent=alertC;
+  renderProfit();
+}
+
+function editMed(id){
+  const r=stock.find(x=>String(x.id)===String(id)); if(!r) return;
+  editId=r.id;
+  document.getElementById('name').value=r.name;
+  document.getElementById('qty').value=r.qty;
+  document.getElementById('exp').value=r.exp;
+  document.getElementById('cost').value=r.cost;
+  document.getElementById('sell').value=r.sell;
+  document.getElementById('low').value=r.low;
+  document.getElementById('high').value=r.high;
+  document.getElementById('btnSave').textContent='✅ Update Medicine';
+  document.getElementById('btnCancel').style.display='inline-block';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function delMed(id){ if(confirm('Delete?')){ stock=stock.filter(x=>String(x.id)!==String(id)); saveStore(); render(); } }
+function sellMed(id, n=1){
+  const r=stock.find(x=>String(x.id)===String(id)); if(!r) return;
+  if(r.qty < n){ alert('Stock kam hai, sirf '+r.qty+' bacha'); return; }
+  r.qty-=n;
+  const profit=(r.sell - r.cost)*n;
+  const t=todayStr(); if(!daily[t]) daily[t]={profit:0,sales:0};
+  daily[t].profit+=profit; daily[t].sales+=n;
+  saveStore(); render();
+}
+function renderProfit(){
+  const t=todayStr(); const d=daily[t]||{profit:0,sales:0};
+  document.getElementById('todayProfit').textContent='Rs '+d.profit.toFixed(2);
+  document.getElementById('profitInfo').textContent=d.sales+' sold today - '+t;
+}
+function eraseTodayProfit(){
+  const t=todayStr();
+  if(confirm('Aaj ka profit erase karna hai? (History save rahegi)')){
+    delete daily[t]; saveStore(); renderProfit();
+  }
+}
+function showHistory(){
+  let txt='PROFIT HISTORY\n\n'; let total=0;
+  Object.keys(daily).sort().reverse().forEach(k=>{ txt+=`${k} : Rs ${daily[k].profit.toFixed(2)} (${daily[k].sales} sold)\n`; total+=daily[k].profit; });
+  if(!Object.keys(daily).length) txt='Koi history nahi';
+  else txt+=`\nTotal: Rs ${total.toFixed(2)}`;
+  alert(txt);
+}
+
+function downloadLowStockPDF(){
+  const lowItems = stock.filter(r=> r.qty <= r.low);
+  if(lowItems.length===0){ alert('Koi Low Stock medicine nahi hai'); return; }
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  doc.setFontSize(16); doc.text('Low Stock Medicine - Reorder List', 14, 18);
+  doc.setFontSize(10); doc.text('Date: '+new Date().toLocaleDateString()+'  |  Generated from Medicine Stock PRO', 14, 24);
+  let y=32;
+  doc.setFontSize(11); doc.setFont(undefined,'bold');
+  doc.text('No',14,y); doc.text('Medicine',22,y); doc.text('Qty Left',90,y); doc.text('Low Limit',110,y); doc.text('Expiry',135,y); doc.text('Sale Price',165,y);
+  doc.setFont(undefined,'normal'); y+=6; doc.line(14,y-4,196,y-4);
+  lowItems.forEach((r,i)=>{
+    if(y>280){ doc.addPage(); y=18; }
+    doc.text(String(i+1),14,y);
+    doc.text(r.name.substring(0,32),22,y);
+    doc.text(String(r.qty),90,y);
+    doc.text(String(r.low),110,y);
+    doc.text(new Date(r.exp).toLocaleDateString(),135,y);
+    doc.text(r.sell.toFixed(2),165,y);
+    y+=7;
+  });
+  y+=4; doc.setFont(undefined,'bold'); doc.text('Total Low Stock Items: '+lowItems.length,14,y);
+  doc.save('Low-Stock-List-'+todayStr()+'.pdf');
+}
+
+render();
+</script>
+</body>
+</html>
