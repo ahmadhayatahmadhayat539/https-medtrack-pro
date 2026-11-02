@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CalcPro - Smart Calculator</title>
+<style>
+  *{box-sizing:border-box;font-family:system-ui,Segoe UI,Arial}
+  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#eef2f7;padding:16px}
+  .calc{width:100%;max-width:340px;background:#fff;border-radius:20px;box-shadow:0 10px 30px rgba(0,0,0,.12);overflow:hidden}
+  .header{background:#1f4e78;color:#fff;padding:14px 18px;display:flex;justify-content:space-between;align-items:center}
+  .header h1{margin:0;font-size:16px}
+  .screen{background:#f8fafc;padding:16px 18px;text-align:right;min-height:90px;display:flex;flex-direction:column;justify-content:center}
+  .screen .prev{color:#94a3b8;font-size:14px;min-height:18px;word-break:break-all}
+  .screen .curr{color:#0f172a;font-size:32px;font-weight:700;word-break:break-all}
+  .keys{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:16px;background:#fff}
+  button{border:0;border-radius:12px;padding:18px 0;font-size:18px;font-weight:600;cursor:pointer;transition:.12s}
+  button:active{transform:scale(.96)}
+  .n{background:#f1f5f9;color:#0f172a} .n:hover{background:#e2e8f0}
+  .op{background:#dbeafe;color:#1e40af} .op:hover{background:#bfdbfe}
+  .eq{background:#0d9488;color:#fff;grid-column:span 2} .eq:hover{background:#0f766e}
+  .ac{background:#fee2e2;color:#b91c1c} .ac:hover{background:#fecaca}
+  .zero{grid-column:span 2}
+</style>
+</head>
+<body>
+<div class="calc">
+  <div class="header"><h1>🧮 CalcPro</h1><small>GitHub App</small></div>
+  <div class="screen">
+    <div class="prev" id="prev"></div>
+    <div class="curr" id="curr">0</div>
+  </div>
+  <div class="keys">
+    <button class="ac" onclick="clearAll()">AC</button>
+    <button class="op" onclick="del()">⌫</button>
+    <button class="op" onclick="press('%')">%</button>
+    <button class="op" onclick="press('/')">÷</button>
+
+    <button class="n" onclick="press('7')">7</button>
+    <button class="n" onclick="press('8')">8</button>
+    <button class="n" onclick="press('9')">9</button>
+    <button class="op" onclick="press('*')">×</button>
+
+    <button class="n" onclick="press('4')">4</button>
+    <button class="n" onclick="press('5')">5</button>
+    <button class="n" onclick="press('6')">6</button>
+    <button class="op" onclick="press('-')">−</button>
+
+    <button class="n" onclick="press('1')">1</button>
+    <button class="n" onclick="press('2')">2</button>
+    <button class="n" onclick="press('3')">3</button>
+    <button class="op" onclick="press('+')">+</button>
+
+    <button class="n zero" onclick="press('0')">0</button>
+    <button class="n" onclick="press('.')">.</button>
+    <button class="eq" onclick="calc()">=</button>
+  </div>
+</div>
+
+<script>
+let exp = '';
+const curr = document.getElementById('curr');
+const prev = document.getElementById('prev');
+
+function press(v){
+  if(v==='%' ){ exp+='/100'; prev.textContent+=v; return update();}
+  exp+=v;
+  update();
+}
+function update(){
+  prev.textContent = exp.replace(/\*/g,'×').replace(/\//g,'÷');
+  try{
+    let t = eval(exp);
+    if(t!==undefined) curr.textContent = t;
+  }catch{}
+}
+function calc(){
+  try{
+    let r = eval(exp);
+    curr.textContent = r;
+    prev.textContent = exp.replace(/\*/g,'×').replace(/\//g,'÷') + ' =';
+    exp = String(r);
+  }catch{ curr.textContent='Error'; }
+}
+function clearAll(){ exp=''; curr.textContent='0'; prev.textContent=''; }
+function del(){ exp=exp.slice(0,-1); if(!exp){clearAll();return;} update(); }
+document.addEventListener('keydown', e=>{
+  if(/[0-9+\-*/.%]/.test(e.key)) press(e.key);
+  if(e.key==='Enter') calc();
+  if(e.key==='Backspace') del();
+  if(e.key==='Escape') clearAll();
+});
+</script>
+</body>
+</html>
